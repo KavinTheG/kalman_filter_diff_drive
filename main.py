@@ -20,8 +20,9 @@ P = np.eye(3)
 # Transform matrix for odometer data (Y = CX + n) where n ~ N(0, R)
 C = np.eye(3)
 
-# Velocity of 1 m/s
+# Velocity of 1 m/s right
 v = 1
+omega = 0
 
 # angular speed
 omega = 0.5
@@ -53,21 +54,18 @@ y_sensor = 0
 theta_sensor = 0
 
 # Initial Inputs
-x_dot = 1
-y_dot = 1
-theta_dot = 0
+x_dot = v * np.cos(0)
+y_dot = v * np.sin(0)
+theta_dot = omega
 
 x = [x_0, y_0, theta_0]
 
 kf = ExtendedKalmanFilter(x, Q, R, P, v)
 
-start = 0
-
-factor = 1
-offset = 0
-
 for _ in range (int(total_time / dt)):
 
+    # Control input noise
+    w = np.random.multivariate_normal(mean=np.zeros(3), cov=Q, size=1).T
     theta_true += dt * theta_dot
     # calculate x and y velocity from theta angle
     x_dot = v * np.cos(theta_true)
@@ -76,16 +74,11 @@ for _ in range (int(total_time / dt)):
     x_true += dt * x_dot
     y_true += dt * y_dot
 
-    omega += factor * offset
     theta_dot = omega
-    v += factor * offset
-    v += factor * offset
+
 
     # Control input
     U = [v, omega]
-
-    # Control input noise
-    w = np.random.multivariate_normal(mean=np.zeros(3), cov=Q, size=1).T
 
     factor = random.choice([-1, 1])
     offset = random.random()
