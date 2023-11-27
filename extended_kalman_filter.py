@@ -11,6 +11,7 @@ class ExtendedKalmanFilter:
         self.theta = self.X_posteriori[2][0]
         self.v = v
         self.X_previous = self.X_posteriori
+        self.X_old_previous = self.X_previous
 
         # x_k^-
         self.X_priori = X
@@ -66,6 +67,8 @@ class ExtendedKalmanFilter:
         ]
 
         self.Qk = np.concatenate((Q1, Q2, Q3), axis=1)
+        #self.Qk = self.Q
+        print("Qk: ", self.Qk)
 
         # Set up matrix A
         self.A = np.eye(3)
@@ -75,8 +78,8 @@ class ExtendedKalmanFilter:
         # Set up matrix B
         self.B = np.zeros((3,2))
         # delta theta is equal self.theta - self.X_prev[2]
-        self.B[0][0] = self.deltaT * np.cos(self.theta + (self.theta - self.X_previous[2][0]) / 2 )
-        self.B[1][0] = self.deltaT * np.sin(self.theta + (self.theta - self.X_previous[2][0]) / 2 )
+        self.B[0][0] = self.deltaT * np.cos(self.theta + (self.theta - self.X_old_previous[2][0]) / 2 )
+        self.B[1][0] = self.deltaT * np.sin(self.theta + (self.theta - self.X_old_previous[2][0]) / 2 )
         self.B[2][1] = 1
 
         self.X_priori = self.X_previous + np.dot(self.B, U)
@@ -94,6 +97,8 @@ class ExtendedKalmanFilter:
         K_{k+1} 
         This boils down to P / P + R
         If R ~ 0, Kg is ~ 1 and vice-versa
+        if Kg ~ 1, the sensor info is more trusted 
+        Otherwise, previous state information is more trusted
         ''' 
         self.kalman_gain = np.dot(self.P_priori, np.linalg.inv(S)) 
 
@@ -102,6 +107,7 @@ class ExtendedKalmanFilter:
     
         # x_{k+1}
         self.X_posteriori = self.X_priori + state_or_sensor
+        self.X_old_previous = self.X_previous
         self.X_previous = self.X_posteriori
 
         # P_{k+1}

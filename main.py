@@ -9,29 +9,28 @@ import random
 
 
 # Assume Odometer data has std of 0.1m 
-R = np.eye(3) * 0.1
+# R = np.ones((3,3)) * 0.01
+R = np.eye(3) 
 
 # Assume kinematic model / inputs has std of 0.1m
-Q = np.eye(3) * 0.01
+Q = np.eye(3)
 
 # Initialize error covariance matrix
-P = np.eye(3)
+# P = np.array([0.01,0.01,0.003])
+P = np.eye(3) * 0.1
 
 # Transform matrix for odometer data (Y = CX + n) where n ~ N(0, R)
 C = np.eye(3)
 
 # Velocity of 1 m/s right
-v = 1
+v = 3
 omega = 0
-
-# angular speed
-omega = 0.5
 
 # Time step 
 dt = 0.1
 
 # Duration = 10 seconds
-total_time = 10 
+total_time = 10
 
 # Set initial position to origin
 x_0 = 0
@@ -83,7 +82,7 @@ for _ in range (int(total_time / dt)):
 
     # Control input noise
     w = np.random.multivariate_normal(mean=np.zeros(3), cov=Q, size=1)
-    print()
+
     theta_true += dt * theta_dot
     # calculate x and y velocity from theta angle
     x_dot = v * np.cos(theta_true)
@@ -120,23 +119,21 @@ for _ in range (int(total_time / dt)):
     print("---Sensor Model----")
     # Y value
     n = np.random.multivariate_normal(mean=np.zeros(3), cov=R, size=1)
-    X_dot_sensor = X_dot_true + n[0]
-    x_sensor += X_dot_sensor[0] * dt
-    y_sensor += X_dot_sensor[1] * dt
-    theta_sensor += X_dot_sensor[2] * dt
-    X_state_sensor = [x_sensor, y_sensor, theta_sensor]
-
+    x_sensor = x_true + n[0][0]
+    y_sensor = y_true + n[0][0]
+    theta_sensor = theta_true + n[0][0]
     # Array to give  to kf to handle np array
-    X_state_sensor_np = [[x_sensor], [y_sensor], [theta_sensor]]
+    X_state_sensor = [[x_sensor], [y_sensor], [theta_sensor]]
     pprint(X_state_sensor)
     
-
-
+    
+    print("Sensor noise: ", n[0])
+    print("Kinematic noise: ", w[0])
     print("\n---Kalman Filter----")
     kf.predict(U)
-    kf.measure(X_state_sensor_np)
+    kf.measure(X_state_sensor)
     kf_state = kf.get_posteriori()
-    print(kf_state)
+    print("kf states: ", kf_state)
     
 
     ### Plot ###
@@ -152,8 +149,8 @@ for _ in range (int(total_time / dt)):
     #time.sleep(0.5)
 print(kf.get_posteriori())
 
-plt.plot(kinematic_plot_x, kinematic_plot_y, color='red', label='Kinematic Model')
-plt.plot(sensor_plot_x, sensor_plot_y, color='green', label='Odom Data')
+plt.plot(kinematic_plot_x, kinematic_plot_y, color='green', label='Kinematic Model')
+plt.plot(sensor_plot_x, sensor_plot_y, color='red', label='Odom Data')
 plt.plot(kalman_x, kalman_y, color='blue', label='Kalman' )
 
 # Add labels and title
