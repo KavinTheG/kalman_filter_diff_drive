@@ -91,8 +91,9 @@ class ExtendedKalmanFilter:
     
     def measure(self, Y):
         # CPC^T whre C is an identity matrix would simplify to P
+        #S = self.P_priori + self.R 
         S = self.P_priori + self.R 
-     
+
         '''
         K_{k+1} 
         This boils down to P / P + R

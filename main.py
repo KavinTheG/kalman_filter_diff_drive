@@ -10,27 +10,27 @@ import random
 
 # Assume Odometer data has std of 0.1m 
 # R = np.ones((3,3)) * 0.01
-R = np.eye(3)*0.03 
+R = np.diag([0.01, 0.01, 0.001])
 
 # Assume kinematic model / inputs has std of 0.1m
 Q = np.eye(3)*0.01
 
 # Initialize error covariance matrix
-# P = np.array([0.01,0.01,0.003])
+#P = np.array([0.01,0.01,0.003])
 P = np.eye(3)
 
 # Transform matrix for odometer data (Y = CX + n) where n ~ N(0, R)
 C = np.eye(3)
 
 # Velocity of 1 m/s right
-v = 3
-omega = 0.5
+v = 1
+omega = 0.
 
 # Time step 
 dt = 0.1
 
 # Duration = 10 seconds
-total_time = 10
+total_time = 15
 
 # Set initial position to origin
 x_0 = 0
@@ -80,8 +80,7 @@ kalman_y = []
 
 for _ in range (int(total_time / dt)):
 
-    # Kinametic noise
-    w = np.random.multivariate_normal(mean=np.zeros(3), cov=Q, size=1)
+
 
     theta_true += dt * theta_dot
     # calculate x and y velocity from theta angle
@@ -105,7 +104,8 @@ for _ in range (int(total_time / dt)):
 
 
     print("\n----Kinematic Model ----")
-
+    # Kinametic noise
+    w = np.random.multivariate_normal([0,0,0], Q)
     X_dot_kin = X_dot_true + w[0]
     x_kin += X_dot_kin[0] * dt
     y_kin += X_dot_kin[1] * dt
@@ -118,10 +118,11 @@ for _ in range (int(total_time / dt)):
     
     print("---Sensor Model----")
     # Y value
-    n = np.random.multivariate_normal(mean=np.zeros(3), cov=R, size=1)
-    x_sensor = x_true + n[0][0]
-    y_sensor = y_true + n[0][0]
-    theta_sensor = theta_true + n[0][0]
+    n = np.random.multivariate_normal([0, 0, 0], R)
+
+    x_sensor = x_true + n[0]
+    y_sensor = y_true + n[1]
+    theta_sensor = theta_true + n[2]
     # Array to give  to kf to handle np array
     X_state_sensor = [[x_sensor], [y_sensor], [theta_sensor]]
     pprint(X_state_sensor)
