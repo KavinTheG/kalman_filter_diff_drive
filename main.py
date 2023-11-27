@@ -10,21 +10,21 @@ import random
 
 # Assume Odometer data has std of 0.1m 
 # R = np.ones((3,3)) * 0.01
-R = np.eye(3) 
+R = np.eye(3)*0.03 
 
 # Assume kinematic model / inputs has std of 0.1m
-Q = np.eye(3)
+Q = np.eye(3)*0.01
 
 # Initialize error covariance matrix
 # P = np.array([0.01,0.01,0.003])
-P = np.eye(3) * 0.1
+P = np.eye(3)
 
 # Transform matrix for odometer data (Y = CX + n) where n ~ N(0, R)
 C = np.eye(3)
 
 # Velocity of 1 m/s right
 v = 3
-omega = 0
+omega = 0.5
 
 # Time step 
 dt = 0.1
@@ -80,7 +80,7 @@ kalman_y = []
 
 for _ in range (int(total_time / dt)):
 
-    # Control input noise
+    # Kinametic noise
     w = np.random.multivariate_normal(mean=np.zeros(3), cov=Q, size=1)
 
     theta_true += dt * theta_dot
@@ -147,6 +147,7 @@ for _ in range (int(total_time / dt)):
     kalman_y.append(kf_state[1][0])
 
     #time.sleep(0.5)
+
 print(kf.get_posteriori())
 
 plt.plot(kinematic_plot_x, kinematic_plot_y, color='green', label='Kinematic Model')

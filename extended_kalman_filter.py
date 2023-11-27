@@ -68,7 +68,6 @@ class ExtendedKalmanFilter:
 
         self.Qk = np.concatenate((Q1, Q2, Q3), axis=1)
         #self.Qk = self.Q
-        print("Qk: ", self.Qk)
 
         # Set up matrix A
         self.A = np.eye(3)
@@ -83,7 +82,8 @@ class ExtendedKalmanFilter:
         self.B[2][1] = 1
 
         self.X_priori = self.X_previous + np.dot(self.B, U)
-        
+        print("B: ", self.B )
+
         AxP = np.dot(self.A, self.P_previous)
         AxPxA = np.dot(AxP, self.A.T)
         self.P_priori = AxPxA + self.Qk
